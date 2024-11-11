@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const {ConnectionString} = require("../appsettings.json")
+const Models = require("./Models");
 require('colors')
 
 class Database {
@@ -7,15 +8,11 @@ class Database {
         this.connection = null;
     }
 
-    connect() {
+   async connect() {
         console.log('⏳ Tentando conexão com banco de dados...'.blue);
-        mongoose.connect(ConnectionString, {
-        }).then(() => {
-            console.log('✔️ Conectado com o banco de dados.'.white);
-            this.connect = mongoose.connection;
-        }).catch(err => {
-            console.error(err);
-        });
+        const connection = await mongoose.connect(ConnectionString, {})
+        console.log('✔️ Conectado com o banco de dados.'.white);
+        this.db = { connection, ...Models };
     }
 }
 

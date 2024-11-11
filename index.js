@@ -49,8 +49,8 @@ process.on('uncaughtExceptionMonitor', (err, origin) => {
 })
 
 const Database = require("./Data/database")
-const bd = new Database;
-bd.connect();
+const db = new Database;
+db.connect();
 
 client.login(Token)
 module.exports = client
