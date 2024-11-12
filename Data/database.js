@@ -5,14 +5,15 @@ require('colors')
 
 class Database {
     constructor() {
-        this.connection = null;
+        this.db = null;
     }
 
    async connect() {
         console.log('⏳ Tentando conexão com banco de dados...'.blue);
-        const connection = await mongoose.connect(ConnectionString, {})
+        await mongoose.connect(ConnectionString, {})
         console.log('✔️ Conectado com o banco de dados.'.white);
-        this.db = { connection, ...Models };
+        this.db = { ...Models };
+        return this.db;
     }
 }
 
