@@ -7,8 +7,11 @@ const verificationSchema = new Schema({
         roleAdd: String,
         roleRemove: String,
         roleAuthorizer: String,
-        embedMessage: String,
-        authorizerMessage: String,
+        category: String,
+        embed:{
+            title: String,
+            description: String,
+        }
     }
 })
 

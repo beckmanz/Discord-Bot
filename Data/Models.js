@@ -1,3 +1,4 @@
 ﻿module.exports = {
-    verification: require('../Models/verification')
+    verification: require('../Models/verification'),
+    request: require('../Models/request')
 }
