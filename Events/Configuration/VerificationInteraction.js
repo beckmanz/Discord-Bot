@@ -7,8 +7,6 @@ module.exports = {
     execute: (client) => {
         client.on('interactionCreate', async (interaction) => {
 
-            const requestsMap = new Map();
-
             if(interaction.isStringSelectMenu()){
                 if (interaction.customId === 'systemVerification') {
                    let options = interaction.values[0]
@@ -271,7 +269,6 @@ module.exports = {
                         const titleEmbed = new Discord.TextInputBuilder()
                             .setCustomId('titleEmbed')
                             .setLabel("Qual sera o titula da embed?")
-                            .setValue(titleSave)
                             .setStyle(Discord.TextInputStyle.Short)
                             .setMaxLength(256)
                             .setRequired(true);
@@ -279,10 +276,16 @@ module.exports = {
                         const descriptionEmbed = new Discord.TextInputBuilder()
                             .setCustomId('descriptionEmbed')
                             .setLabel("Qual sera o conteúdo do corpo da embed?")
-                            .setValue(descriptionSave)
                             .setStyle(Discord.TextInputStyle.Paragraph)
                             .setMaxLength(4000)
                             .setRequired(true);
+
+                        if(titleSave){
+                            titleEmbed.setValue(titleSave)
+                        }
+                        if (descriptionSave){
+                            descriptionEmbed.setValue(descriptionSave)
+                        }
 
                         const title = new Discord.ActionRowBuilder().addComponents(titleEmbed);
                         const description = new Discord.ActionRowBuilder().addComponents(descriptionEmbed);
@@ -302,12 +305,15 @@ module.exports = {
                         let description = serverConfig.configuration.embed.description;
 
                         if (!channel || !roleAdd || !roleRemove || !title || !description) {
-                            return interaction.reply({ content: "Uma ou mais configurações obrigatórias estão faltando. Finalize a configuração do sistema antes de prosseguir.", ephemeral: true });
+                            const { embed, row} = await embedPainel(client, interaction)
+                            await interaction.update({ embeds: [embed], components: [row] });
+                            return interaction.followUp({ content: "Uma ou mais configurações obrigatórias estão faltando. Finalize a configuração do sistema antes de prosseguir.", ephemeral: true });
                         }
 
                         const embedV = new Discord.EmbedBuilder()
                             .setTitle(title)
                             .setDescription(description)
+                            .setFooter({ text: `Todos os direitos reservados, ${interaction.guild.name}. ©2024`})
                             .setColor("#2b2d31");
 
                         const buttons = new Discord.ActionRowBuilder()
@@ -428,19 +434,28 @@ module.exports = {
                     user.roles.add(roleAdd);
                     user.roles.remove(roleRemove);
 
-                    await interaction.update({ content: `A solicitação do membro ${user} foi aceita com sucesso, agora ele possui total acesso ao servidor.`, embeds: [], components: []});
-                    setTimeout(() => interaction.channel.delete(), 30 * 1000);
+                    let embed = new Discord.EmbedBuilder()
+                        .setDescription(`A solicitação do membro ${user} foi aceita com sucesso, agora ele possui total acesso ao servidor.`)
+                        .setFooter({ text: `Todos os direitos reservados, ${interaction.guild.name}. ©2024`})
+                        .setColor("#2b2d31")
+
                     await request.deleteOne();
+                    await interaction.update({ embeds: [embed], components: []});
+                    setTimeout(() => interaction.channel.delete(), 30 * 1000);
 
                 }
                 if (interaction.customId === "cancel"){
                     let request = await client.db.request.findOne({channel: interaction.channel.id});
                     const user = await interaction.guild.members.cache.get(request.requester);
 
+                    let embed = new Discord.EmbedBuilder()
+                        .setDescription(`A solicitação do membro ${user} foi recusado com sucesso.`)
+                        .setFooter({ text: `Todos os direitos reservados, ${interaction.guild.name}. ©2024`})
+                        .setColor("#2b2d31")
 
-                    await interaction.update({ content: `A solicitação do membro ${user} foi recusada com sucesso.`, embeds: [], components: []});
-                    setTimeout(() => interaction.channel.delete(), 30 * 1000);
                     await request.deleteOne();
+                    await interaction.update({ embeds: [embed], components: []});
+                    setTimeout(() => interaction.channel.delete(), 30 * 1000);
                 }
             }
             if(interaction.isUserSelectMenu()){
@@ -449,8 +464,8 @@ module.exports = {
                     const selectedMember = interaction.guild.members.cache.get(selected);
                     let userIcon = interaction.user.displayAvatarURL({ dynamic: true });
 
-                    if (selectedMember.id === interaction.user.id || selectedMember.user.bot) return interaction.reply({ content: `${interaction.user}, ouve um problema ao buscar o usuário, escolha outro membro.`, embeds: [], components: [], ephemeral: true  });
-
+                    if (selectedMember.id === interaction.user.id) return interaction.reply({ content: `${interaction.user}, você não pode se auto verificar, escolha outro membro.`, embeds: [], components: [], ephemeral: true  });
+                    if (selectedMember.user.bot) return interaction.reply({ content: `${interaction.user}, você não pode pedir que um bot o verifique, escolha outro membro.`, embeds: [], components: [], ephemeral: true  });
                     let serverConfig = await client.db.verification.findById(interaction.guild.id);
                     let category = interaction.guild.channels.cache.get(serverConfig.configuration.category);
 
