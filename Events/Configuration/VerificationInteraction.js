@@ -441,7 +441,7 @@ module.exports = {
 
                     await request.deleteOne();
                     await interaction.update({ embeds: [embed], components: []});
-                    setTimeout(() => interaction.channel.delete(), 30 * 1000);
+                    setTimeout(() => interaction.channel.delete(), 15 * 1000);
 
                 }
                 if (interaction.customId === "cancel"){
@@ -455,7 +455,7 @@ module.exports = {
 
                     await request.deleteOne();
                     await interaction.update({ embeds: [embed], components: []});
-                    setTimeout(() => interaction.channel.delete(), 30 * 1000);
+                    setTimeout(() => interaction.channel.delete(), 15 * 1000);
                 }
             }
             if(interaction.isUserSelectMenu()){
